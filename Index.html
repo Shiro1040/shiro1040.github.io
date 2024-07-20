@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>D Asiatic Tours Calendario</title>
+    <link href='https://fullcalendar.io/releases/fullcalendar/3.9.0/fullcalendar.min.css' rel='stylesheet' />
+    <script src='https://fullcalendar.io/releases/fullcalendar/3.9.0/lib/moment.min.js'></script>
+    <script src='https://fullcalendar.io/releases/fullcalendar/3.9.0/lib/jquery.min.js'></script>
+    <script src='https://fullcalendar.io/releases/fullcalendar/3.9.0/fullcalendar.min.js'></script>
+    
+    <style>
+        #container {
+            max-width: 3000px;
+            margin: 0 auto;
+        }
+
+        #header img {
+            max-width: 100%;
+            height: 100px;
+            margin-right: 10px;
+        }
+
+        #calendar {
+            margin-top: 10px;
+        }
+
+        .fc-day {
+            background-color: #e0f7fa; /* Celeste */
+        }
+
+        .fc-has-event {
+            background-color: #a5d6a7 !important; /* Verde */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="container">
+        <div id="header">
+            <img src="Logo calendario.png" alt="Encabezado del Calendario">
+        </div>
+        <div id='calendar'></div>
+    </div>
+
+    <div id='calendar'></div>
+
+
+
+    <script>
+        $(document).ready(function() {
+            // Función para cargar eventos desde el localStorage
+            function loadEvents() {
+                var events = localStorage.getItem('calendarEvents');
+                return events ? JSON.parse(events) : [];
+            }
+
+            // Función para guardar eventos en el localStorage
+            function saveEvents(events) {
+                localStorage.setItem('calendarEvents', JSON.stringify(events));
+            }
+
+            // Inicializar el calendario con eventos desde el localStorage
+            var storedEvents = loadEvents();
+
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                selectable: true,
+                selectHelper: true,
+                editable: true,
+                events: storedEvents,
+                select: function(start, end) {
+                    var title = prompt('Evento:');
+                    if (title) {
+                        var eventData = {
+                            title: title,
+                            start: start,
+                            end: end
+                        };
+                        $('#calendar').fullCalendar('renderEvent', eventData, true);
+
+                        // Guardar eventos en el localStorage
+                        var events = $('#calendar').fullCalendar('clientEvents');
+                        saveEvents(events);
+                    }
+                    $('#calendar').fullCalendar('unselect');
+                },
+                eventClick: function(event) {
+                    var deleteEvent = confirm('¿Eliminar evento?');
+                    if (deleteEvent) {
+                        $('#calendar').fullCalendar('removeEvents', event._id);
+
+                        // Guardar eventos en el localStorage
+                        var events = $('#calendar').fullCalendar('clientEvents');
+                        saveEvents(events);
+                    }
+                },
+                eventAfterAllRender: function() {
+                    $("td.fc-day").each(function() {
+                        var date = $(this).data('date');
+                        var events = $('#calendar').fullCalendar('clientEvents', function(event) {
+                            return moment(event.start).format('YYYY-MM-DD') === date;
+                        });
+                        if (events.length > 0) {
+                            $(this).css("background-color", "#a5d6a7"); // Verde si hay evento
+                        } else {
+                            $(this).css("background-color", "#e0f7fa"); // Celeste por defecto
+                        }
+                    });
+                },
+                viewRender: function() {
+                    setTimeout(function() {
+                        $("td.fc-day").each(function() {
+                            var date = $(this).data('date');
+                            var events = $('#calendar').fullCalendar('clientEvents', function(event) {
+                                return moment(event.start).format('YYYY-MM-DD') === date;
+                            });
+                            if (events.length > 0) {
+                                $(this).css("background-color", "#a5d6a7"); // Verde si hay evento
+                            } else {
+                                $(this).css("background-color", "#e0f7fa"); // Celeste por defecto
+                            }
+                        });
+                    }, 1);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
